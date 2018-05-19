@@ -154,10 +154,6 @@ class Node(object):
             self.queried.add(unqueried)
     
 
-class Client(object):
-    def __init__(self):
-        pass
-
 # m specifies the number of times to run each node
 def run_nodes(nodes, m):
     for _ in range(m):
