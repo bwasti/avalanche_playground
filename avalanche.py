@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
 
     # As a test we are going to create a conflict
-    # and make tx2 WAY more trusted than tx3
+    # and make tx1 WAY more trusted than tx2
     tx0 = Transaction(0, set())
     tx1 = Transaction(1, set([tx0]))
     tx2 = Transaction(1, set([tx0]))
@@ -186,7 +186,7 @@ if __name__ == "__main__":
     n.recv(tx2)
     run_nodes(nodes, 10)
  
-    # Have everyone pile on to tx2
+    # Have everyone pile on to tx1
     for i in range(2, 24, 2):
         tx = Transaction(i, set([tx1]))
         n.recv(tx)
