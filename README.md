@@ -12,7 +12,7 @@ I thought it'd be nice to add a visual to aide in exploration.  Uses `curses` an
 python renderer.py
 ```
 
-![simulation](https://thumbs.gfycat.com/GargantuanMadEkaltadeta-max-14mb.gif)
+You can see a clip of it here: https://gfycat.com/GargantuanMadEkaltadeta
 
 # Paper
 
