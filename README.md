@@ -9,7 +9,7 @@ I thought it'd be nice to add a visual to aide in exploration.  Uses `curses` an
 # Usage
 
 ```
-python renderer.py
+python simulator.py
 ```
 
 You can see a clip of it here: https://gfycat.com/GargantuanMadEkaltadeta
