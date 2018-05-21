@@ -4,6 +4,8 @@ import time
 
 GENESIS_NODE = None
 UNIQUE_NUMBER_MAP = dict()
+
+
 def get_unique_name(base):
     global UNIQUE_NUMBER_MAP
     if base in UNIQUE_NUMBER_MAP:
@@ -12,16 +14,19 @@ def get_unique_name(base):
         UNIQUE_NUMBER_MAP[base] = 0
     return base + "_" + str(UNIQUE_NUMBER_MAP[base])
 
+
 class Transaction(object):
     def __init__(self, utxo, parents, name=""):
         self.name = get_unique_name("tx") if name == "" else name
         self.utxo = utxo
         self.parents = parents
+
     def __repr__(self):
         return "Tx({}, {}, {})".format(
             self.utxo,
             self.parents,
             self.name)
+
 
 class Node(object):
     def __init__(self, name="", alpha=0.75, k=10, beta_1=10, beta_2=10):
@@ -69,10 +74,10 @@ class Node(object):
   count: {}
   txs: {}
 )""".format(
-                    self.pref,
-                    self.last,
-                    self.count,
-                    self.transactions)
+                self.pref,
+                self.last,
+                self.count,
+                self.transactions)
 
     def recv(self, tx):
         global GENESIS_NODE
@@ -100,6 +105,8 @@ class Node(object):
             parent_set_copy = copy.copy(parent_set)
             parent_set = set()
             for parent in parent_set_copy:
+                if parent not in self.transactions:
+                    return False
                 strongly_preferred &= self.conflicts[parent.utxo].pref == parent
                 parent_set = parent_set.union(parent.parents)
 
@@ -123,9 +130,8 @@ class Node(object):
             early_commit &= self.is_accepted(parent)
         early_commit &= len(self.conflicts[tx.utxo].transactions) == 1
         early_commit &= self.get_confidence(tx) > self.beta_1
-        if not early_commit:
-            if self.conflicts[tx.utxo].pref == tx:
-                return self.conflicts[tx.utxo].count > self.beta_2
+        if not early_commit and self.conflicts[tx.utxo].pref == tx:
+            return self.conflicts[tx.utxo].count > self.beta_2
         return early_commit
 
     def dump(self, tx):
@@ -135,24 +141,36 @@ class Node(object):
         print(self.conflicts[tx.utxo])
         print("--- end ---")
 
+    def can_be_digested(self, tx):
+        for parent in tx.parents:
+            if parent not in self.transactions:
+                return False
+        return True
+        
     def run(self):
         for unqueried in self.transactions.difference(self.queried):
+            if not self.can_be_digested(unqueried):
+                continue
+
             # Get a random sample of the nodes in the network
             query_nodes = random.sample(self.nodes, self.k)
-            positive_responses = sum([query_node.query(unqueried) for query_node in query_nodes])
-            if (positive_responses >= int(self.alpha * self.k)):
-                self.chits[unqueried] = 1
-                for parent in unqueried.parents:
-                    if self.get_confidence(parent) > self.get_confidence(self.conflicts[parent.utxo].pref):
-                        self.conflicts[parent.utxo].pref = parent
-                    if parent is not self.conflicts[parent.utxo].last:
-                        self.conflicts[parent.utxo].last = parent
-                        self.conflicts[parent.utxo].count = 0
-                    else:
-                        self.conflicts[parent.utxo].count += 1
+            positive_responses = sum(
+                [query_node.query(unqueried) for query_node in query_nodes])
+            if positive_responses < int(self.alpha * self.k):
+                continue
+            self.chits[unqueried] = 1
+            for parent in unqueried.parents:
+                if self.get_confidence(parent) > self.get_confidence(
+                        self.conflicts[parent.utxo].pref):
+                    self.conflicts[parent.utxo].pref = parent
+                if parent is not self.conflicts[parent.utxo].last:
+                    self.conflicts[parent.utxo].last = parent
+                    self.conflicts[parent.utxo].count = 0
+                else:
+                    self.conflicts[parent.utxo].count += 1
 
             self.queried.add(unqueried)
-    
+
 
 # m specifies the number of times to run each node
 def run_nodes(nodes, m):
@@ -160,17 +178,16 @@ def run_nodes(nodes, m):
         for node in nodes:
             node.run()
 
+
 if __name__ == "__main__":
 
     n = Node()
     nodes = set([n])
-    query = lambda tx: sum([node.query(tx2) for node in nodes])
 
     for _ in range(50):
         nodes.add(Node())
     for node in nodes:
         node.nodes = copy.copy(nodes)
-
 
     # As a test we are going to create a conflict
     # and make tx1 WAY more trusted than tx2
@@ -185,13 +202,13 @@ if __name__ == "__main__":
     run_nodes(nodes, 10)
     n.recv(tx2)
     run_nodes(nodes, 10)
- 
+
     # Have everyone pile on to tx1
     for i in range(2, 24, 2):
         tx = Transaction(i, set([tx1]))
         n.recv(tx)
         run_nodes(nodes, 10)
-        otx = Transaction(i+1, set([tx]))
+        otx = Transaction(i + 1, set([tx]))
         n.recv(otx)
         run_nodes(nodes, 10)
 
