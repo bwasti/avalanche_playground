@@ -146,7 +146,7 @@ class Node(object):
             if parent not in self.transactions:
                 return False
         return True
-        
+
     def run(self):
         for unqueried in self.transactions.difference(self.queried):
             if not self.can_be_digested(unqueried):
@@ -172,50 +172,5 @@ class Node(object):
             self.queried.add(unqueried)
 
 
-# m specifies the number of times to run each node
-def run_nodes(nodes, m):
-    for _ in range(m):
-        for node in nodes:
-            node.run()
-
-
 if __name__ == "__main__":
-
-    n = Node()
-    nodes = set([n])
-
-    for _ in range(50):
-        nodes.add(Node())
-    for node in nodes:
-        node.nodes = copy.copy(nodes)
-
-    # As a test we are going to create a conflict
-    # and make tx1 WAY more trusted than tx2
-    tx0 = Transaction(0, set())
-    tx1 = Transaction(1, set([tx0]))
-    tx2 = Transaction(1, set([tx0]))
-
-    # Place all the transactions in the network
-    n.recv(tx0)
-    run_nodes(nodes, 10)
-    n.recv(tx1)
-    run_nodes(nodes, 10)
-    n.recv(tx2)
-    run_nodes(nodes, 10)
-
-    # Have everyone pile on to tx1
-    for i in range(2, 24, 2):
-        tx = Transaction(i, set([tx1]))
-        n.recv(tx)
-        run_nodes(nodes, 10)
-        otx = Transaction(i + 1, set([tx]))
-        n.recv(otx)
-        run_nodes(nodes, 10)
-
-    n.dump(tx0)
-    n.dump(tx1)
-    n.dump(tx2)
-
-    print(n.is_accepted(tx0))
-    print(n.is_accepted(tx1))
-    print(n.is_accepted(tx2))
+    print("try python simulator.py")
