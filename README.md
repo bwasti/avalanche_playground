@@ -4,6 +4,16 @@ A structural (non-cryptographic) Python implementation of the avalanche algorith
 Papers like this rely on structural primitives and incentives within the network to actually remain secure/stable.
 This repo boils down the important bits into Python so you can play with/attack/validate the algorithm.
 
+I thought it'd be nice to add a visual to aide in exploration.  Uses `curses` and `networkx`.
+
+# Usage
+
+```
+python renderer.py
+```
+
+![simulation](https://thumbs.gfycat.com/GargantuanMadEkaltadeta-max-14mb.gif)
+
 # Paper
 
 Get the paper here: https://drive.google.com/file/d/150uOd161WUzmcypoGUPfW3PrzE9lc_Eo/view
@@ -14,6 +24,7 @@ Get the paper here: https://drive.google.com/file/d/150uOd161WUzmcypoGUPfW3PrzE9
 to call it a number of times between transaction submissions.
 I meant this to be useful as it gives fine grained control for testing asynchronous attacks.
 - I believe the paper has a bug on figure 6 line 6 that I fix in this implementation (you need to check for the preferred transaction in the conflict set, not just the count).
+- Asynchronous execution is not analyzed in the paper nor described in the implementation so I added a simple deferment mechanism that only tries to add the transaction once the parents are already added.
 
 # TODO
 
